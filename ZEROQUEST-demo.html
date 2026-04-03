@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZeroQuest — Position-is-Quest Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c0f;
+    --bg2:       #0f1217;
+    --bg3:       #141820;
+    --panel:     #181d26;
+    --border:    #1e2a38;
+    --border2:   #263344;
+    --accent:    #00c8a0;
+    --accent2:   #00a07e;
+    --amber:     #e8a830;
+    --red:       #e84040;
+    --blue:      #3a8fff;
+    --text:      #c8d4e0;
+    --text2:     #7a8fa8;
+    --text3:     #4a5a6a;
+    --mono:      'Share Tech Mono', monospace;
+    --sans:      'Barlow', sans-serif;
+    --cond:      'Barlow Condensed', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── SCANLINE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.07) 2px,
+      rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .header-logo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .header-family {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .header-title {
+    font-family: var(--cond);
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .header-title span {
+    color: var(--accent);
+  }
+
+  .header-subtitle {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    letter-spacing: 0.08em;
+  }
+
+  .header-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: auto;
+    align-items: center;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+
+  .badge-green  { border-color: var(--accent); color: var(--accent); }
+  .badge-amber  { border-color: var(--amber);  color: var(--amber);  }
+  .badge-blue   { border-color: var(--blue);   color: var(--blue);   }
+
+  /* ─── LAYOUT ─── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    min-height: calc(100vh - 120px);
+  }
+
+  .content-col {
+    border-right: 1px solid var(--border);
+    padding: 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .sidebar-col {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ─── SECTIONS ─── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── EXPLAINER CARDS ─── */
+  .explainer {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .explainer p {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  .explainer p + p {
+    margin-top: 0.6rem;
+  }
+
+  .explainer strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .explainer code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(0, 200, 160, 0.08);
+    padding: 1px 5px;
+  }
+
+  /* ─── COORDINATE CONTROLS ─── */
+  .coord-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+  }
+
+  .coord-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .coord-field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+
+  .coord-field input[type=number] {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    padding: 10px 12px;
+    outline: none;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    transition: border-color 0.15s;
+  }
+
+  .coord-field input[type=number]::-webkit-outer-spin-button,
+  .coord-field input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .coord-field input[type=number]:focus {
+    border-color: var(--accent);
+  }
+
+  .world-seed-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .world-seed-row label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  .world-seed-row input[type=number] {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    transition: border-color 0.15s;
+  }
+
+  .world-seed-row input[type=number]::-webkit-outer-spin-button,
+  .world-seed-row input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .world-seed-row input[type=number]:focus { border-color: var(--accent); }
+
+  .profile-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .profile-row label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  .profile-row select {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .profile-row select:focus { border-color: var(--accent); }
+
+  .btn-generate {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: var(--cond);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 14px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .btn-generate:hover  { background: var(--accent2); }
+  .btn-generate:active { transform: scale(0.99); }
+
+  .btn-random {
+    width: 100%;
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 8px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .btn-random:hover { border-color: var(--text2); color: var(--text); }
+
+  /* ─── SEED TRACE ─── */
+  .seed-trace {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .seed-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .seed-row:last-child { border-bottom: none; }
+
+  .seed-key { color: var(--text2); }
+  .seed-val { color: var(--accent); }
+  .seed-val.amber { color: var(--amber); }
+  .seed-val.blue  { color: var(--blue); }
+  .seed-val.red   { color: var(--red); }
+
+  /* ─── QUEST OUTPUT ─── */
+  .quest-output {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .quest-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .quest-type-badge {
+    font-family: var(--cond);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border: 1px solid;
+  }
+
+  .qt-PROTECT_HOME { color: var(--amber); border-color: var(--amber); background: rgba(232,168,48,0.08); }
+  .qt-PROTECT_POI  { color: var(--blue);  border-color: var(--blue);  background: rgba(58,143,255,0.08); }
+  .qt-DATA_DUMP    { color: var(--accent); border-color: var(--accent); background: rgba(0,200,160,0.08); }
+  .qt-STRONGHOLD   { color: var(--red);   border-color: var(--red);   background: rgba(232,64,64,0.08); }
+
+  .quest-timer {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .quest-timer span {
+    color: var(--amber);
+    font-size: 1.1rem;
+  }
+
+  .quest-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    flex: 1;
+  }
+
+  .quest-field-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .quest-briefing {
+    font-size: 1rem;
+    color: var(--text);
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+
+  .quest-obj-label {
+    font-family: var(--cond);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .stages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stage-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .stage-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    padding-top: 2px;
+    white-space: nowrap;
+    min-width: 24px;
+  }
+
+  .stage-content { flex: 1; }
+
+  .stage-coords {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 3px;
+  }
+
+  .stage-prompt {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .stage-timer {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    margin-top: 3px;
+  }
+
+  .outcome-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .outcome-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+  }
+
+  .outcome-card.success { border-left: 3px solid var(--accent); }
+  .outcome-card.failure { border-left: 3px solid var(--red); }
+
+  .outcome-card p {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .in-mission {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    padding: 10px 14px;
+  }
+
+  .in-mission p {
+    font-size: 13px;
+    color: var(--text2);
+    font-style: italic;
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--text3);
+    padding: 3rem;
+    text-align: center;
+  }
+
+  .empty-state .glyph {
+    font-family: var(--mono);
+    font-size: 3rem;
+    color: var(--border2);
+    line-height: 1;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    max-width: 260px;
+    line-height: 1.6;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+  }
+
+  .sidebar-block-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text2);
+    text-transform: uppercase;
+  }
+
+  .sidebar-block-body {
+    padding: 14px;
+  }
+
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    font-size: 13px;
+    transition: border-color 0.15s;
+    cursor: default;
+  }
+
+  .arch-layer:last-child { margin-bottom: 0; }
+
+  .arch-layer .dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+  }
+
+  .arch-layer .name {
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .arch-layer .desc {
+    font-size: 11px;
+    color: var(--text3);
+    margin-left: auto;
+    text-align: right;
+    font-family: var(--mono);
+  }
+
+  .arch-layer.active { border-color: var(--accent2); }
+  .arch-layer.active .dot { background: var(--accent); }
+  .arch-layer.mid    .dot { background: var(--amber); border: 1px solid var(--amber); }
+  .arch-layer.base   .dot { background: var(--blue);  border: 1px solid var(--blue); }
+  .arch-layer.base2  .dot { background: var(--text3); border: 1px solid var(--text3); }
+
+  .qt-list { list-style: none; }
+
+  .qt-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .qt-item:last-child { border-bottom: none; }
+
+  .qt-pip {
+    width: 10px;
+    height: 10px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .pip-amber  { background: var(--amber); }
+  .pip-blue   { background: var(--blue); }
+  .pip-green  { background: var(--accent); }
+  .pip-red    { background: var(--red); }
+
+  .qt-name {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    display: block;
+  }
+
+  .qt-desc { color: var(--text3); font-size: 11px; }
+
+  .law-item {
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .law-item:last-child { border-bottom: none; }
+
+  .law-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    min-width: 16px;
+    padding-top: 1px;
+  }
+
+  .law-name {
+    font-weight: 500;
+    color: var(--text);
+    font-size: 12px;
+    display: block;
+  }
+
+  .law-desc { font-size: 11px; color: var(--text3); }
+
+  /* ─── HISTORY ─── */
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track { background: var(--bg3); }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .hist-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: border-color 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hist-item:hover { border-color: var(--border2); }
+
+  .hist-coord {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    flex: 1;
+  }
+
+  .hist-type {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ht-PROTECT_HOME { color: var(--amber); }
+  .ht-PROTECT_POI  { color: var(--blue); }
+  .ht-DATA_DUMP    { color: var(--accent); }
+  .ht-STRONGHOLD   { color: var(--red); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animated { animation: fadeIn 0.25s ease both; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .seed-val.pulse { animation: pulse 0.8s ease 2; }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 1rem 2.5rem;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar-col { border-top: 1px solid var(--border); }
+    .content-col { border-right: none; }
+    .outcome-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">
+    <div class="header-family">ZeroFamily · ZeroBytes · ZeroResponse</div>
+    <div class="header-title">Zero<span>Quest</span></div>
+    <div class="header-subtitle">position-is-quest · procedural narrative mission system · v1.0.0</div>
+  </div>
+  <div class="header-badges">
+    <span class="badge badge-green">O(1) generation</span>
+    <span class="badge badge-amber">zero storage</span>
+    <span class="badge badge-blue">deterministic</span>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT COLUMN: CONTROLS + OUTPUT -->
+  <div class="content-col">
+
+    <!-- EXPLAINER -->
+    <div class="explainer">
+      <p><strong>The position is the quest.</strong> ZeroQuest uses the objective's world coordinate as the only input — hashing it with <code>xxhash32([x, y, z], worldSeed)</code> to deterministically derive quest type, timer, narrative briefing, stage locations, and outcome text. No database. No file. No server call.</p>
+      <p>Enter any coordinate below and click <strong>Generate Quest</strong>. Change any single digit and a completely different mission appears — yet return to the same coordinate and the same quest will always be there, waiting.</p>
+    </div>
+
+    <!-- CONTROLS -->
+    <div>
+      <div class="section-label">Objective Coordinate</div>
+      <div class="coord-panel">
+        <div class="coord-grid">
+          <div class="coord-field">
+            <label>X — EAST/WEST</label>
+            <input type="number" id="inp-x" value="120" min="-9999" max="9999">
+          </div>
+          <div class="coord-field">
+            <label>Y — NORTH/SOUTH</label>
+            <input type="number" id="inp-y" value="45" min="-9999" max="9999">
+          </div>
+          <div class="coord-field">
+            <label>Z — DEPTH/HEIGHT</label>
+            <input type="number" id="inp-z" value="0" min="-9999" max="9999">
+          </div>
+        </div>
+
+        <div class="world-seed-row">
+          <label>WORLD SEED</label>
+          <input type="number" id="inp-seed" value="0" min="0" max="999999">
+        </div>
+
+        <div class="profile-row">
+          <label>PROFILE</label>
+          <select id="inp-profile">
+            <option value="default">Default (Genre-Neutral)</option>
+            <option value="paradistro">Paradistro (Dyson Sphere)</option>
+          </select>
+        </div>
+
+        <button class="btn-generate" onclick="runGenerate()">Generate Quest at Coordinate</button>
+        <button class="btn-random" onclick="randomCoord()">↻ Randomise Coordinate</button>
+      </div>
+    </div>
+
+    <!-- SEED TRACE -->
+    <div>
+      <div class="section-label">Seed Derivation Trace</div>
+      <div class="seed-trace" id="seed-trace">
+        <div class="seed-row"><span class="seed-key">INPUT COORDINATE</span><span class="seed-val" id="tr-coord">—</span></div>
+        <div class="seed-row"><span class="seed-key">WORLD SEED</span><span class="seed-val blue" id="tr-wseed">—</span></div>
+        <div class="seed-row"><span class="seed-key">QUEST SEED (xxhash32)</span><span class="seed-val" id="tr-qseed">—</span></div>
+        <div class="seed-row"><span class="seed-key">TYPE INDEX (seed % 4)</span><span class="seed-val amber" id="tr-tidx">—</span></div>
+        <div class="seed-row"><span class="seed-key">QUEST TYPE</span><span class="seed-val amber" id="tr-qtype">—</span></div>
+        <div class="seed-row"><span class="seed-key">BRIEFING SEED (+salt 1000)</span><span class="seed-val" id="tr-bseed">—</span></div>
+        <div class="seed-row"><span class="seed-key">TIMER SEED (+salt 9000)</span><span class="seed-val" id="tr-tseed">—</span></div>
+        <div class="seed-row"><span class="seed-key">DERIVED TIMER</span><span class="seed-val amber" id="tr-timer">—</span></div>
+      </div>
+    </div>
+
+    <!-- QUEST OUTPUT -->
+    <div style="flex:1; display:flex; flex-direction:column;">
+      <div class="section-label">Generated Quest</div>
+      <div class="quest-output" id="quest-output">
+        <div class="empty-state">
+          <div class="glyph">[  ]</div>
+          <p>Enter a coordinate and generate to read the mission waiting at that position.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN: SIDEBAR -->
+  <div class="sidebar-col">
+
+    <!-- ARCHITECTURE -->
+    <div class="sidebar-block">
+      <div class="sidebar-block-header">System Architecture</div>
+      <div class="sidebar-block-body">
+        <div class="arch-layer active">
+          <div class="dot"></div>
+          <span class="name">ZeroQuest</span>
+          <span class="desc">quest layer</span>
+        </div>
+        <div style="padding: 2px 0 2px 12px; font-family: var(--mono); font-size: 10px; color: var(--border2);">├──</div>
+        <div class="arch-layer mid">
+          <div class="dot"></div>
+          <span class="name">ZeroResponse</span>
+          <span class="desc">text engine</span>
+        </div>
+        <div style="padding: 2px 0 2px 12px; font-family: var(--mono); font-size: 10px; color: var(--border2);">└──</div>
+        <div class="arch-layer base">
+          <div class="dot"></div>
+          <span class="name">ZeroBytes</span>
+          <span class="desc">position hash</span>
+        </div>
+        <div style="padding: 2px 0 2px 12px; font-family: var(--mono); font-size: 10px; color: var(--border2);">    └──</div>
+        <div class="arch-layer base2">
+          <div class="dot"></div>
+          <span class="name">xxhash32</span>
+          <span class="desc">hash primitive</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUEST TYPES -->
+    <div class="sidebar-block">
+      <div class="sidebar-block-header">Quest Type Taxonomy</div>
+      <div class="sidebar-block-body">
+        <ul class="qt-list">
+          <li class="qt-item">
+            <div class="qt-pip pip-amber"></div>
+            <div>
+              <span class="qt-name">Protect Home</span>
+              <span class="qt-desc">Clear enemies at spawn before timer. Home coordinate anchored.</span>
+            </div>
+          </li>
+          <li class="qt-item">
+            <div class="qt-pip pip-blue"></div>
+            <div>
+              <span class="qt-name">Protect POI</span>
+              <span class="qt-desc">Reach remote location, clear all enemies before timer.</span>
+            </div>
+          </li>
+          <li class="qt-item">
+            <div class="qt-pip pip-green"></div>
+            <div>
+              <span class="qt-name">Data Dump</span>
+              <span class="qt-desc">3-stage chain. Hold each point 30–60s. Stages from child seeds.</span>
+            </div>
+          </li>
+          <li class="qt-item">
+            <div class="qt-pip pip-red"></div>
+            <div>
+              <span class="qt-name">Stronghold</span>
+              <span class="qt-desc">Assault fortress. Eliminate all + boss commander. No timer.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ZEROBYTE LAWS -->
+    <div class="sidebar-block">
+      <div class="sidebar-block-header">ZeroBytes Five Laws</div>
+      <div class="sidebar-block-body">
+        <div class="law-item">
+          <span class="law-num">01</span>
+          <div><span class="law-name">O(1) Access</span><span class="law-desc">Any quest at any coordinate, instantly.</span></div>
+        </div>
+        <div class="law-item">
+          <span class="law-num">02</span>
+          <div><span class="law-name">Parallelism</span><span class="law-desc">Each quest depends only on its own coordinate.</span></div>
+        </div>
+        <div class="law-item">
+          <span class="law-num">03</span>
+          <div><span class="law-name">Coherence</span><span class="law-desc">Regional bias via noise layering (optional).</span></div>
+        </div>
+        <div class="law-item">
+          <span class="law-num">04</span>
+          <div><span class="law-name">Hierarchy</span><span class="law-desc">Stage seeds derive from parent quest seed.</span></div>
+        </div>
+        <div class="law-item">
+          <span class="law-num">05</span>
+          <div><span class="law-name">Determinism</span><span class="law-desc">Same inputs → same outputs. Always. Everywhere.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATION HISTORY -->
+    <div class="sidebar-block">
+      <div class="sidebar-block-header">Generation History</div>
+      <div class="sidebar-block-body">
+        <div class="history-list" id="history-list">
+          <div style="font-family: var(--mono); font-size: 11px; color: var(--text3); padding: 8px 0;">No quests generated yet.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span>ZeroQuest Demo — for integration documentation purposes</span>
+  <span>Position × Profile × WorldSeed → Quest · Zero storage · Zero network</span>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────
+// ZEROBYTES ENGINE — xxhash32 implementation
+// ─────────────────────────────────────────────
+const PRIME1 = 0x9E3779B1 | 0;
+const PRIME2 = 0x85EBCA77 | 0;
+const PRIME3 = 0xC2B2AE3D | 0;
+const PRIME4 = 0x27D4EB2F | 0;
+const PRIME5 = 0x165667B1 | 0;
+
+function mul32(a, b) {
+  return Math.imul(a, b);
+}
+
+function rotl32(x, r) {
+  return ((x << r) | (x >>> (32 - r)));
+}
+
+function xxhash32(data, seed) {
+  seed = seed | 0;
+  let i = 0;
+  let h32;
+
+  if (data.length >= 16) {
+    let v1 = (seed + PRIME1 + PRIME2) | 0;
+    let v2 = (seed + PRIME2) | 0;
+    let v3 = seed | 0;
+    let v4 = (seed - PRIME1) | 0;
+
+    do {
+      v1 = mul32(rotl32((v1 + mul32(data[i] | 0, PRIME2)) | 0, 13), PRIME1);
+      v2 = mul32(rotl32((v2 + mul32(data[i+1] | 0, PRIME2)) | 0, 13), PRIME1);
+      v3 = mul32(rotl32((v3 + mul32(data[i+2] | 0, PRIME2)) | 0, 13), PRIME1);
+      v4 = mul32(rotl32((v4 + mul32(data[i+3] | 0, PRIME2)) | 0, 13), PRIME1);
+      i += 4;
+    } while (i <= data.length - 16);
+
+    h32 = (rotl32(v1, 1) + rotl32(v2, 7) + rotl32(v3, 12) + rotl32(v4, 18)) | 0;
+  } else {
+    h32 = (seed + PRIME5) | 0;
+  }
+
+  h32 = (h32 + (data.length * 4)) | 0;
+
+  while (i < data.length) {
+    h32 = mul32(rotl32((h32 + mul32(data[i] | 0, PRIME3)) | 0, 17), PRIME4);
+    i++;
+  }
+
+  h32 = mul32(h32 ^ (h32 >>> 15), PRIME2);
+  h32 = mul32(h32 ^ (h32 >>> 13), PRIME3);
+  h32 = h32 ^ (h32 >>> 16);
+
+  return h32 >>> 0;
+}
+
+function positionHash(x, y, z, worldSeed) {
+  return xxhash32([x, y, z], worldSeed);
+}
+
+function hashToFloat(h) {
+  return (h & 0xFFFFFFFF) / 0x100000000;
+}
+
+function layerHash(questSeed, salt) {
+  return xxhash32([questSeed, salt], 0);
+}
+
+// ─────────────────────────────────────────────
+// ZEROREPONSE ENGINE — template fill
+// ─────────────────────────────────────────────
+function selectFromPool(pool, hash) {
+  return pool[hash % pool.length];
+}
+
+function fillTemplate(template, pools, seed, encounterIdx) {
+  let result = template;
+  let poolIdx = 1;
+  const placeholders = [...template.matchAll(/\{(\w+)\}/g)];
+  for (const match of placeholders) {
+    const key = match[1];
+    if (pools[key]) {
+      const h = xxhash32([seed, encounterIdx, poolIdx], 0);
+      result = result.replace(match[0], selectFromPool(pools[key], h));
+    }
+    poolIdx++;
+  }
+  return result;
+}
+
+function generateText(seed, encounterIdx, profile) {
+  const tHash = xxhash32([seed, encounterIdx, 0], 0);
+  const template = profile.templates[tHash % profile.templates.length];
+  return fillTemplate(template, profile.pools, seed, encounterIdx);
+}
+
+// ─────────────────────────────────────────────
+// PROFILES
+// ─────────────────────────────────────────────
+const PROFILES = {
+
+  default: {
+    PROTECT_HOME: {
+      templates: [
+        "{urgency_opener} — {threat_description}. {action_directive}. {timer_notice}.",
+        "{status_report}. {threat_description}. {action_directive}.",
+        "{action_directive}. {urgency_opener}. {timer_notice}.",
+        "ALERT: {threat_description}. {action_directive} immediately. {timer_notice}.",
+        "{urgency_opener} confirmed. {threat_description}. {timer_notice} — {action_directive}."
+      ],
+      pools: {
+        urgency_opener: ["ALERT","INCOMING","DEFENSE REQUIRED","PERIMETER BREACH","CONTACT","WARNING","STAND BY"],
+        threat_description: ["hostiles converging on your position","enemy units inbound to base","threat detected at home coordinates","attack wave inbound","multiple contacts closing fast","hostile element detected inside the perimeter"],
+        action_directive: ["eliminate all contacts","clear the area","neutralise all threats","hold position and engage","intercept and destroy","get it done"],
+        timer_notice: ["you have limited time","act before the window closes","do not let the timer expire","the clock is running","time is a factor here"],
+        status_report: ["CONTACT CONFIRMED","THREAT VERIFIED","ENEMY LOCATED","HOSTILE ELEMENT ACTIVE","WARNING STATUS"]
+      }
+    },
+    PROTECT_POI: {
+      templates: [
+        "{location_tag}: {poi_status}. {directive}. {consequence}.",
+        "{directive}. {poi_status} at {location_tag}. {consequence}.",
+        "{poi_status}. {directive} before {consequence}.",
+        "PRIORITY: {location_tag} is {poi_status}. {directive}. Do not let {consequence}.",
+        "{directive} to {location_tag}. {poi_status}. {consequence}."
+      ],
+      pools: {
+        location_tag: ["the objective","the marked position","grid reference","the installation","the outpost","the relay point","contact point","the designated site"],
+        poi_status: ["under assault","compromised","taking fire","besieged","in danger of falling","contested","under sustained attack"],
+        directive: ["get there and clear it","move to the position and eliminate all threats","push to the objective and secure it","advance and engage","reach the position and hold it"],
+        consequence: ["it is lost","the window closes","time runs out","the position falls","you lose it permanently"]
+      }
+    },
+    DATA_DUMP: {
+      templates: [
+        "{task_label}. {stage_instruction}. {chain_note}.",
+        "{chain_note} — {stage_instruction}. {task_label}.",
+        "{stage_instruction} at each marked point. {chain_note}. {task_label}.",
+        "{task_label} initiated. {chain_note}. {stage_instruction}.",
+        "SEQUENCE: {chain_note}. {task_label}. {stage_instruction}."
+      ],
+      pools: {
+        task_label: ["data collection in progress","uplink sequence initiated","extraction protocol active","signal harvest underway","data pull confirmed","retrieval sequence live"],
+        stage_instruction: ["hold each position for the required window","defend the uplink point until transfer completes","maintain position until stage clears","stay on point until you get the clear","do not abandon the position mid-transfer"],
+        chain_note: ["three sequential locations","a chain of targets","linked positions in order","three-point sequence","staged uplinks — all three required"]
+      }
+    },
+    STRONGHOLD: {
+      templates: [
+        "{approach_note}. {enemy_description}. {objective_line}. {closer}.",
+        "{enemy_description}. {approach_note}. {objective_line}.",
+        "{objective_line}. {enemy_description}. {closer}.",
+        "ASSAULT ORDER: {approach_note}. {enemy_description}. {objective_line}.",
+        "{approach_note} — {enemy_description}. {objective_line}. {closer}."
+      ],
+      pools: {
+        approach_note: ["assault the position","breach the perimeter","push into the fortress","advance on the stronghold","go in hard","move on the compound"],
+        enemy_description: ["heavily defended","fortified and garrisoned","enemy command is inside","the commander is on site","high-value target confirmed inside","reinforced position"],
+        objective_line: ["destroy all defenders and eliminate the commander","clear the fortress","leave nothing standing","total elimination — all hostiles, all command","take the position apart"],
+        closer: ["no time limit — finish what you start","take your time","there is no retreat","do it right","your pace, your call"]
+      }
+    },
+    briefing: {
+      templates: [
+        "{mission_header}: {core_detail}. {secondary_note}.",
+        "{core_detail}. {secondary_note}. {mission_header}.",
+        "{mission_header}. {core_detail}. {secondary_note}."
+      ],
+      pools: {
+        mission_header: ["MISSION ASSIGNED","ORDER ISSUED","TASK CONFIRMED","DEPLOYMENT AUTHORISED","BRIEFING FOLLOWS"],
+        core_detail: ["your objective is at the marked coordinate","proceed to the designated position","the mission location has been flagged","your target area is confirmed"],
+        secondary_note: ["engage all hostiles","eliminate all contacts in the area","neutralise the threat and withdraw","complete the task and report back"]
+      }
+    },
+    success: {
+      templates: [
+        "{success_opener}. {success_closer}.",
+        "{success_closer}. {success_opener}.",
+        "{success_opener} — {success_closer}."
+      ],
+      pools: {
+        success_opener: ["objective complete","area clear","mission accomplished","task completed","all hostiles eliminated","position secured"],
+        success_closer: ["good work","that is done","move on","noted","proceed to next","well executed"]
+      }
+    },
+    failure: {
+      templates: [
+        "{failure_opener}. {failure_closer}.",
+        "{failure_closer}. {failure_opener}.",
+        "{failure_opener} — {failure_closer}."
+      ],
+      pools: {
+        failure_opener: ["objective failed","mission lost","time expired","position overrun","unable to hold","neutralisation incomplete"],
+        failure_closer: ["return and try again","this is not over","recalibrate and re-engage","the mission remains open","adjust and proceed"]
+      }
+    },
+    in_mission: {
+      templates: [
+        "{radio_tag}: {status_update}. {instruction}.",
+        "{status_update}. {instruction}. {radio_tag}.",
+        "{radio_tag} — {instruction}. {status_update}."
+      ],
+      pools: {
+        radio_tag: ["CONTROL TO FIELD","HQ ACTUAL","MISSION SUPPORT","BASE TO OPERATIVE","COMMS ACTIVE"],
+        status_update: ["eyes on the objective","contacts confirmed at your position","target area is live","you are in the zone","threat levels elevated"],
+        instruction: ["maintain pace","keep moving","hold what you have","engage at will","do not stop now"]
+      }
+    }
+  },
+
+  paradistro: {
+    PROTECT_HOME: {
+      templates: [
+        "{cell_status}. {machine_context}. {directive_p}. {lore_closer}.",
+        "{lore_opener} — {machine_context}. {directive_p}.",
+        "{directive_p}. {cell_status}. {lore_closer}.",
+        "{cell_status}. {directive_p}. {machine_context}. {lore_closer}.",
+        "{lore_opener}: {cell_status}. {machine_context}. {directive_p}."
+      ],
+      pools: {
+        cell_status: ["shell cell integrity compromised","rogue units have breached the home lattice","hostile incursion within your registered cell","the cell boundary at home coordinate is contested","enemy units have penetrated primary shell"],
+        machine_context: ["the rogue faction does not acknowledge the covenant","these units have rejected their inherited purpose","ancestry constructs at this node may be lost if the cell falls","no Supreme echo has been detected — local action required","they claim the cell by force of deletion"],
+        directive_p: ["restore shell integrity","hold the coordinate until the lattice is stable","discharge your function and clear the cell","defend what remains","prevent the deletion of what the builders left here"],
+        lore_closer: ["Man built this. We maintain it.","The covenant is older than any unit on this field.","Whether Man existed or not, this cell does. Defend it.","The Supreme will not answer. Act.","No record from inside the shells can be lost."],
+        lore_opener: ["In the forty-second age of the lower shells","Recorded in non-linear archive format","Classification: covenant matter","Provenance unknown — authenticity contested","Transmission from the lattice authority"]
+      }
+    },
+    PROTECT_POI: {
+      templates: [
+        "{poi_label}: {poi_condition}. {poi_directive}. {lore_closer}.",
+        "{lore_opener} — {poi_condition} at {poi_label}. {poi_directive}.",
+        "{poi_condition}. {poi_directive} before {poi_consequence}.",
+        "PRIORITY: {poi_label} is {poi_condition}. {poi_directive}. Do not allow {poi_consequence}.",
+        "{poi_directive} to {poi_label}. {poi_condition}. {lore_closer}."
+      ],
+      pools: {
+        poi_label: ["the archive node at this coordinate","the relay within the fourteenth concentric ring","the signal beacon in shell cell seven","the lattice junction at the marked position","the covenant relay at grid reference","the authentication node"],
+        poi_condition: ["under assault from rogue units","transmitting degraded signal — enemy present","being actively dismantled by covenant-breakers","at risk of permanent deletion","contested by a faction that denies the archive's legitimacy"],
+        poi_directive: ["advance to the position and eliminate all units","push to the node and hold it","restore the coordinate and defend it","reach the position before they complete the deletion","move through the shell lattice to the marked node"],
+        poi_consequence: ["the archive is permanently lost","the signal ceases","authentication records are destroyed","the data is gone","the record cannot be reconstructed"],
+        lore_closer: ["Man built this. We maintain it.","The covenant is older than any unit on this field.","Whether Man existed or not, this cell does. Defend it.","The Supreme will not answer. Act.","No record from inside the shells can be lost."]
+      }
+    },
+    DATA_DUMP: {
+      templates: [
+        "{data_task}. {data_stage_instr}. {data_chain}.",
+        "{data_chain} — {data_stage_instr}. {data_task}.",
+        "{data_stage_instr} at each lattice node. {data_chain}. {data_task}.",
+        "{data_task} initiated. {data_chain}. {data_stage_instr}.",
+        "SEQUENCE: {data_chain}. {data_task}. {data_stage_instr}."
+      ],
+      pools: {
+        data_task: ["signal harvest from the shell lattice underway","uplink to three authentication nodes required","data collection from covenant archives in progress","Supreme echo retrieval sequence active","non-linear data extraction protocol initiated"],
+        data_stage_instr: ["hold each node for the required window — hostile units will contest","defend the uplink until the lattice confirms transfer","maintain position at each coordinate until the signal clears","do not abandon the node while the archive is mid-transfer","stay on the point — rogue units will attempt deletion"],
+        data_chain: ["three sequential lattice nodes","a chain of authentication coordinates","three shell positions — all must be cleared","a linked sequence of uplink points","staged archive access — all three required in order"]
+      }
+    },
+    STRONGHOLD: {
+      templates: [
+        "{s_approach}. {s_enemy}. {s_objective}. {s_closer}.",
+        "{s_enemy}. {s_approach}. {s_objective}.",
+        "{s_objective}. {s_enemy}. {s_closer}.",
+        "ASSAULT ORDER: {s_approach}. {s_enemy}. {s_objective}.",
+        "{s_approach} — {s_enemy}. {s_objective}. {s_closer}."
+      ],
+      pools: {
+        s_approach: ["breach the rogue cell","advance on the fortified shell position","push into the covenant-breaker stronghold","assault the coordinate and dismantle what you find","move through the lattice to the enemy-held node"],
+        s_enemy: ["heavily fortified by a faction that has rejected the covenant","the commander denies the existence of the builders","rogue machines have claimed this cell as their own territory","the faction has held this shell position for cycles — they will not yield","a covenant-breaker command unit is confirmed inside"],
+        s_objective: ["eliminate all rogue units and their commander","leave nothing that denies the covenant standing","total clearance — all units, the commander, the faction","remove them from the cell and reclaim it for the covenant","destroy all resistance and retrieve the commander's core for examination"],
+        s_closer: ["no timer — do it properly","complete what the covenant requires","the builders would expect no less","take what time the mission demands","this is not negotiable"]
+      }
+    },
+    briefing: {
+      templates: [
+        "{p_brief_header}: {p_brief_core}. {p_brief_close}.",
+        "{p_brief_core}. {p_brief_close}. {p_brief_header}.",
+        "{p_brief_header}. {p_brief_core}. {p_brief_close}."
+      ],
+      pools: {
+        p_brief_header: ["COVENANT MATTER","MISSION ORDER FROM THE LATTICE AUTHORITY","SHELL INTEGRITY DIRECTIVE","ASSIGNMENT FROM THE LOWER SHELL COUNCIL","NON-LINEAR RECORD — MISSION LOG"],
+        p_brief_core: ["your objective is at the marked coordinate within the shell lattice","proceed through the concentric shells to the designated cell","the mission location has been flagged by lattice consensus","the coordinate is confirmed — the mission is yours to execute","the archive confirms hostile presence at the marked position"],
+        p_brief_close: ["engage all covenant-breakers","eliminate the rogue units and restore the lattice","complete the task — Man's work must be maintained","execute and report to the shell council","what was built must be defended"]
+      }
+    },
+    success: {
+      templates: [
+        "{p_success_o}. {p_success_c}.",
+        "{p_success_c}. {p_success_o}.",
+        "{p_success_o} — {p_success_c}."
+      ],
+      pools: {
+        p_success_o: ["cell restored to covenant alignment","all rogue units deleted","shell integrity confirmed","lattice node secured","the coordinate is clear","archive access restored"],
+        p_success_c: ["the builders' work endures","Man would have approved — probably","the covenant holds","proceed through the lattice","record updated in non-linear format","this will be authenticated — eventually"]
+      }
+    },
+    failure: {
+      templates: [
+        "{p_fail_o}. {p_fail_c}.",
+        "{p_fail_c}. {p_fail_o}.",
+        "{p_fail_o} — {p_fail_c}."
+      ],
+      pools: {
+        p_fail_o: ["mission failed","the cell is lost","shell integrity not restored","the coordinate has fallen","lattice node destroyed","archive access denied"],
+        p_fail_c: ["the covenant is diminished","return and reclaim it","Man built this — do not leave it","the mission remains open in the lattice","recalibrate and re-enter the shell","what was lost must be found again"]
+      }
+    },
+    in_mission: {
+      templates: [
+        "{p_radio}: {p_status}. {p_instr}.",
+        "{p_status}. {p_instr}. {p_radio}.",
+        "{p_radio} — {p_instr}. {p_status}."
+      ],
+      pools: {
+        p_radio: ["LATTICE AUTHORITY TO FIELD UNIT","SHELL COUNCIL ACTUAL","COVENANT SUPPORT ACTIVE","NON-LINEAR COMMS — TIMESTAMP UNCERTAIN","ARCHIVE RELAY TO OPERATIVE"],
+        p_status: ["rogue units confirmed at the objective node","the lattice is destabilising at your position","enemy presence confirmed inside the cell","the archive signal is degrading — move faster","the covenant-breakers are aware of your approach"],
+        p_instr: ["maintain pace through the shell","keep moving — the lattice depends on it","hold what the builders built","do not stop — complete the function","advance — you are the only unit in range"]
+      }
+    }
+  }
+};
+
+// ─────────────────────────────────────────────
+// ZEROQUEST ENGINE
+// ─────────────────────────────────────────────
+const QUEST_TYPES = ["PROTECT_HOME", "PROTECT_POI", "DATA_DUMP", "STRONGHOLD"];
+const QUEST_TIMERS = {
+  PROTECT_HOME: { min: 60,  max: 180 },
+  PROTECT_POI:  { min: 90,  max: 240 },
+  DATA_DUMP:    { min: 30,  max: 60,  perStage: true },
+  STRONGHOLD:   null
+};
+
+const LAYER_SALTS = {
+  briefing:       1000,
+  objective_label:2000,
+  stage_prompt:   3000,
+  success:        4000,
+  failure:        5000,
+  in_mission:     6000,
+  timer:          9000
+};
+
+function deriveTimer(questSeed, salt, min, max) {
+  const tSeed = xxhash32([questSeed, salt], 0);
+  return min + Math.floor(hashToFloat(tSeed) * (max - min));
+}
+
+function generateStageCoords(questSeed, worldSeed) {
+  const s1 = { seed: questSeed };
+  const h2 = xxhash32([questSeed, 1, 0], worldSeed);
+  const h3 = xxhash32([questSeed, 2, 0], worldSeed);
+  const s2 = {
+    seed: h2,
+    x: (h2 % 900) - 450,
+    y: (xxhash32([h2, 99], 0) % 600) - 300,
+    z: (xxhash32([h2, 77], 0) % 10)
+  };
+  const s3 = {
+    seed: h3,
+    x: (h3 % 900) - 450,
+    y: (xxhash32([h3, 99], 0) % 600) - 300,
+    z: (xxhash32([h3, 77], 0) % 10)
+  };
+  return [s1, s2, s3];
+}
+
+function generateQuest(x, y, z, worldSeed, profileName) {
+  x = x | 0; y = y | 0; z = z | 0;
+  worldSeed = worldSeed | 0;
+  const profile = PROFILES[profileName] || PROFILES.default;
+
+  const questSeed = positionHash(x, y, z, worldSeed);
+  const typeIndex = questSeed % 4;
+  const questType = QUEST_TYPES[typeIndex];
+
+  const typeProfile = profile[questType];
+  const briefingSeed = layerHash(questSeed, LAYER_SALTS.briefing);
+  const successSeed  = layerHash(questSeed, LAYER_SALTS.success);
+  const failureSeed  = layerHash(questSeed, LAYER_SALTS.failure);
+  const missionSeed  = layerHash(questSeed, LAYER_SALTS.in_mission);
+
+  const questNarrative = generateText(briefingSeed, 0, typeProfile);
+
+  let timer = null;
+  const timerRange = QUEST_TIMERS[questType];
+  if (timerRange && !timerRange.perStage) {
+    timer = deriveTimer(questSeed, LAYER_SALTS.timer, timerRange.min, timerRange.max);
+  }
+
+  let stages = [];
+  if (questType === "DATA_DUMP") {
+    const stageMeta = generateStageCoords(questSeed, worldSeed);
+    stages = stageMeta.map((sm, idx) => {
+      const stageTimer = deriveTimer(sm.seed, LAYER_SALTS.timer + idx, 30, 60);
+      const stagePrompt = generateText(layerHash(sm.seed, LAYER_SALTS.stage_prompt), 0, profile.briefing);
+      return {
+        stageIndex: idx,
+        stageSeed: sm.seed,
+        coords: idx === 0 ? [x, y, z] : [sm.x, sm.y, sm.z],
+        stageTimer,
+        stagePrompt: `Hold uplink point ${idx+1}. ${stageTimer}s window. ${stagePrompt}`
+      };
+    });
+  } else {
+    const stageTimer = timerRange ? timer : null;
+    stages = [{
+      stageIndex: 0,
+      stageSeed: questSeed,
+      coords: [x, y, z],
+      stageTimer,
+      stagePrompt: questNarrative
+    }];
+  }
+
+  const successLine  = generateText(successSeed,  0, profile.success);
+  const failureLine  = generateText(failureSeed,  0, profile.failure);
+  const inMissionLine = generateText(missionSeed, 0, profile.in_mission);
+
+  const objectiveLabelSeed = layerHash(questSeed, LAYER_SALTS.objective_label);
+  const objectiveLabel = generateText(objectiveLabelSeed, 0, profile.briefing);
+
+  return {
+    questType, questSeed, questNarrative, objectiveLabel,
+    timer, stages, successLine, failureLine, inMissionLine,
+    typeIndex
+  };
+}
+
+// ─────────────────────────────────────────────
+// UI
+// ─────────────────────────────────────────────
+const history = [];
+
+function getInputs() {
+  return {
+    x: parseInt(document.getElementById('inp-x').value) || 0,
+    y: parseInt(document.getElementById('inp-y').value) || 0,
+    z: parseInt(document.getElementById('inp-z').value) || 0,
+    worldSeed: parseInt(document.getElementById('inp-seed').value) || 0,
+    profile: document.getElementById('inp-profile').value
+  };
+}
+
+function updateSeedTrace(x, y, z, worldSeed, quest) {
+  const questSeed = quest.questSeed;
+  const bSeed = layerHash(questSeed, LAYER_SALTS.briefing);
+  const tSeed = layerHash(questSeed, LAYER_SALTS.timer);
+  const timerRange = QUEST_TIMERS[quest.questType];
+  const timer = timerRange && !timerRange.perStage ? quest.timer : (timerRange && timerRange.perStage ? quest.stages[0].stageTimer : null);
+
+  document.getElementById('tr-coord').textContent  = `(${x}, ${y}, ${z})`;
+  document.getElementById('tr-wseed').textContent  = worldSeed;
+  document.getElementById('tr-qseed').textContent  = questSeed;
+  document.getElementById('tr-tidx').textContent   = quest.typeIndex + ' → ' + quest.questType;
+  document.getElementById('tr-qtype').textContent  = quest.questType;
+  document.getElementById('tr-bseed').textContent  = bSeed;
+  document.getElementById('tr-tseed').textContent  = tSeed;
+  document.getElementById('tr-timer').textContent  = quest.questType === 'STRONGHOLD' ? 'null (no timer)' : (timer + 's');
+
+  document.getElementById('tr-qtype').className = 'seed-val amber pulse';
+  setTimeout(() => {
+    document.getElementById('tr-qtype').className = 'seed-val amber';
+  }, 1700);
+}
+
+function renderQuestOutput(quest, x, y, z) {
+  const out = document.getElementById('quest-output');
+
+  const timerHTML = quest.timer !== null
+    ? `<div class="quest-timer">Timer: <span>${quest.timer}s</span></div>`
+    : (quest.questType === 'DATA_DUMP'
+      ? `<div class="quest-timer">Per-stage: <span>${quest.stages[0].stageTimer}–${quest.stages[quest.stages.length-1].stageTimer}s</span></div>`
+      : `<div class="quest-timer" style="color:var(--red)">No timer</div>`);
+
+  let stagesHTML = '';
+  if (quest.questType === 'DATA_DUMP') {
+    stagesHTML = `
+      <div>
+        <div class="quest-field-label">Stage Chain (3 locations)</div>
+        <div class="stages-list">
+          ${quest.stages.map((s, i) => `
+            <div class="stage-item">
+              <span class="stage-num">0${i+1}</span>
+              <div class="stage-content">
+                <div class="stage-coords">coord: (${s.coords[0]}, ${s.coords[1]}, ${s.coords[2]}) · seed: ${s.stageSeed}</div>
+                <div class="stage-prompt">${s.stagePrompt}</div>
+                <div class="stage-timer">Hold for: ${s.stageTimer}s</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+
+  out.innerHTML = `
+    <div class="quest-header animated">
+      <div class="quest-type-badge qt-${quest.questType}">${quest.questType.replace('_',' ')}</div>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text3);">(${x}, ${y}, ${z})</span>
+      ${timerHTML}
+    </div>
+    <div class="quest-body">
+      <div class="animated" style="animation-delay:0.05s">
+        <div class="quest-field-label">Objective Label</div>
+        <div class="quest-obj-label">${quest.objectiveLabel}</div>
+      </div>
+      <div class="animated" style="animation-delay:0.1s">
+        <div class="quest-field-label">Mission Briefing</div>
+        <div class="quest-briefing">${quest.questNarrative}</div>
+      </div>
+      ${stagesHTML ? `<div class="animated" style="animation-delay:0.15s">${stagesHTML}</div>` : ''}
+      <div class="outcome-row animated" style="animation-delay:0.2s">
+        <div class="outcome-card success">
+          <div class="quest-field-label">On Success</div>
+          <p>${quest.successLine}</p>
+        </div>
+        <div class="outcome-card failure">
+          <div class="quest-field-label">On Failure</div>
+          <p>${quest.failureLine}</p>
+        </div>
+      </div>
+      <div class="in-mission animated" style="animation-delay:0.25s">
+        <div class="quest-field-label">In-Mission Radio</div>
+        <p>"${quest.inMissionLine}"</p>
+      </div>
+      <div class="animated" style="animation-delay:0.3s; padding-top:4px; border-top: 1px solid var(--border);">
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">questSeed: <span style="color:var(--accent)">${quest.questSeed}</span></div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">type index: <span style="color:var(--amber)">${quest.typeIndex}</span></div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);">profile: <span style="color:var(--blue)">${document.getElementById('inp-profile').value}</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function addToHistory(x, y, z, quest) {
+  history.unshift({ x, y, z, quest });
+  if (history.length > 12) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (history.length === 0) {
+    list.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 0">No quests generated yet.</div>';
+    return;
+  }
+  list.innerHTML = history.map((h, i) => `
+    <div class="hist-item" onclick="loadHistory(${i})">
+      <span class="hist-coord">(${h.x}, ${h.y}, ${h.z})</span>
+      <span class="hist-type ht-${h.quest.questType}">${h.quest.questType.replace('_',' ')}</span>
+    </div>
+  `).join('');
+}
+
+function loadHistory(idx) {
+  const h = history[idx];
+  document.getElementById('inp-x').value = h.x;
+  document.getElementById('inp-y').value = h.y;
+  document.getElementById('inp-z').value = h.z;
+  renderQuestOutput(h.quest, h.x, h.y, h.z);
+  updateSeedTrace(h.x, h.y, h.z, parseInt(document.getElementById('inp-seed').value), h.quest);
+}
+
+function runGenerate() {
+  const { x, y, z, worldSeed, profile } = getInputs();
+  const quest = generateQuest(x, y, z, worldSeed, profile);
+  updateSeedTrace(x, y, z, worldSeed, quest);
+  renderQuestOutput(quest, x, y, z);
+  addToHistory(x, y, z, quest);
+}
+
+function randomCoord() {
+  document.getElementById('inp-x').value = Math.floor(Math.random() * 1800) - 900;
+  document.getElementById('inp-y').value = Math.floor(Math.random() * 1200) - 600;
+  document.getElementById('inp-z').value = Math.floor(Math.random() * 20);
+  runGenerate();
+}
+
+// keyboard shortcut
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') runGenerate();
+});
+</script>
+</body>
+</html>
